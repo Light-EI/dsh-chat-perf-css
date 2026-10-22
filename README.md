@@ -37,32 +37,21 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
 ## 安装
 
-**先决条件**：DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
-「命中的类名还在不在」（见 [兼容性](#兼容性)）。
-
-### 方式 A（推荐）：交给插件管理器
-
-在 DSH 的插件管理器里安装，安装规格填：
+在 DSH 的插件管理器里安装，地址填：
 
 ```
 github:Light-EI/dsh-chat-perf-css#v1.0.0
 ```
 
-管理器会把它写进 profile 的 `dependencies` 和 `dsh.profile.bundles`，并自己跑 `pnpm install`，
-不需要手改任何 JSON。
+**装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
+`dsh.profile.bundles` 一起写好。
 
-> 本仓库目前是**私有**仓库，只有被邀请的账号能这样装。其他人请用 Release 里的 zip 走方式 B。
-
-### 方式 B（手动，离线可用）
-
-1. 解压 Release 里的 zip，把 `dsh-chat-perf-css` 目录放进 `<profile>\plugins\dsh-chat-perf-css\`。
-2. 在该 profile 的 `package.json` 里：
-   - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
-   - `dsh.profile.bundles` 数组增加 `"dsh-chat-perf-css"`
-3. 在 profile 目录跑一次 `pnpm install`（建立 `node_modules` 链接并更新 lockfile）。
-4. 重开 DSH 窗口。
-
-桌面端与浏览器端是同一个窗口生效，不需要第二种界面。
+- 填的是 **pnpm 规格**，不是浏览器地址栏那个 URL。直接贴 `https://github.com/Light-EI/dsh-chat-perf-css`
+  会被 pnpm 当成压缩包直链，装不上。
+- 本仓库目前是**私有**仓库：只有被邀请的账号能这样装。其他人用
+  [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip 走下面的手动安装。
+- DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
+  「命中的类名还在不在」（见 [兼容性](#兼容性)）。
 
 ### 装完怎么确认
 
@@ -74,10 +63,27 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 
 返回 `"auto"` 即生效；返回 `"visible"` 说明规则没命中，多半是 DSH 前端改了类名 —— 见 [兼容性](#兼容性)。
 
+<details>
+<summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
+
+1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.0.zip`，把 `dsh-chat-perf-css` 目录放进
+   `<profile>\plugins\dsh-chat-perf-css\`。
+2. 在该 profile 的 `package.json` 里：
+   - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
+   - `dsh.profile.bundles` 数组增加 `"dsh-chat-perf-css"`
+3. 在 profile 目录跑一次 `pnpm install`（建立 `node_modules` 链接并更新 lockfile）。
+4. 重开 DSH 窗口。
+
+桌面端与浏览器端是同一个窗口生效，不需要第二种界面。
+
+> 绕开安装器时这两步**必须都做**：只写 `dependencies` 会把包装上但不会被加载，页面没有任何变化。
+
+</details>
+
 ## 卸载
 
-从 `dsh.profile.bundles` 去掉这项、从 `dependencies` 去掉这条，跑 `pnpm install`，
-再删掉 `plugins\dsh-chat-perf-css\` 目录即可。页面样式即时消失。
+在插件管理器里卸载即可。手动装的按反方向来：从 `dsh.profile.bundles` 去掉这项、从 `dependencies`
+去掉这条，跑 `pnpm install`，再删掉 `plugins\dsh-chat-perf-css\` 目录。页面样式即时消失。
 
 > 如果 DSH 官方已经提供虚拟滚动，本插件就该退场：在已经虚拟滚动的列表上再叠一层
 > `contain-intrinsic-size` 占位，只会让滚动条长度更不准。
