@@ -4,7 +4,7 @@ DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一�
 
 ## 定位（先读这段）
 
-| | |
+| 项 | 说明 |
 |---|---|
 | ✅ 它做 | **滚动 / 重绘减负** —— 让视口外的消息子树跳过 style / layout / paint |
 | ❌ 它不做 | **不解决流式生成时公式反复重算**。生成过程中，可见区域的公式仍会随每个增量重新排版；那是渲染逻辑本身的事，与「屏外跳过」是两回事，本插件对此无能为力 |
@@ -37,14 +37,42 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
 ## 安装
 
-1. 把整个 `dsh-chat-perf-css` 目录放进 `<profile>\plugins\dsh-chat-perf-css\`。
+**先决条件**：DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
+「命中的类名还在不在」（见 [兼容性](#兼容性)）。
+
+### 方式 A（推荐）：交给插件管理器
+
+在 DSH 的插件管理器里安装，安装规格填：
+
+```
+github:Light-EI/dsh-chat-perf-css#v1.0.0
+```
+
+管理器会把它写进 profile 的 `dependencies` 和 `dsh.profile.bundles`，并自己跑 `pnpm install`，
+不需要手改任何 JSON。
+
+> 本仓库目前是**私有**仓库，只有被邀请的账号能这样装。其他人请用 Release 里的 zip 走方式 B。
+
+### 方式 B（手动，离线可用）
+
+1. 解压 Release 里的 zip，把 `dsh-chat-perf-css` 目录放进 `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
-   - `dependencies` 增加 `"dsh-chat-perf-css": "link:plugins/dsh-chat-perf-css"`
+   - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
    - `dsh.profile.bundles` 数组增加 `"dsh-chat-perf-css"`
-3. 在 profile 目录跑一次 `pnpm install`（会建立 `node_modules` 链接并更新 lockfile）。
+3. 在 profile 目录跑一次 `pnpm install`（建立 `node_modules` 链接并更新 lockfile）。
 4. 重开 DSH 窗口。
 
 桌面端与浏览器端是同一个窗口生效，不需要第二种界面。
+
+### 装完怎么确认
+
+在 DSH 窗口的开发者工具里执行：
+
+```js
+getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibility
+```
+
+返回 `"auto"` 即生效；返回 `"visible"` 说明规则没命中，多半是 DSH 前端改了类名 —— 见 [兼容性](#兼容性)。
 
 ## 卸载
 
@@ -77,9 +105,12 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
 ## 兼容性
 
-- 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足。
-- Firefox 的 `content-visibility` 支持较晚，Safari 17.4+ 起支持。老版本浏览器会忽略这两条
-  规则 —— 退化为「没有优化」，不会出错。
+| 维度 | 说明 |
+|---|---|
+| DSH 版本 | 在 DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
+| 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
+| 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
+| Firefox / Safari | Firefox 支持较晚，Safari 17.4+ 起支持。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
 
 ## 许可
 

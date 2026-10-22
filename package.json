@@ -3,6 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "description": "Long-conversation render relief for the DSH chat view: off-screen message bodies and block formulas skip style, layout and paint.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "content-visibility",
+    "long-conversation",
+    "rendering",
+    "performance"
+  ],
+  "homepage": "https://github.com/Light-EI/dsh-chat-perf-css#readme",
+  "bugs": {
+    "url": "https://github.com/Light-EI/dsh-chat-perf-css/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Light-EI/dsh-chat-perf-css.git"
+  },
+  "license": "MIT",
+  "author": "Light-EI",
   "type": "module",
   "main": "index.js",
   "exports": {
