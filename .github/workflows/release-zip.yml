@@ -1,0 +1,78 @@
+name: release-zip
+
+# 发版时自动打包 zip 附件，消灭「zip 与 tag 内容不一致」这类手滑。
+# 手动触发（dry_run=true）只打包不上传，用来验证流程本身。
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 要打包的 tag（例如 v1.0.0）
+        required: true
+      dry_run:
+        description: 只打包，不上传
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 只有上传资产需要写权限
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: 校验文件齐全、语法可解析、版本号对得上 tag
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          # 1. 出厂文件必须一个不少（有人改名/删文件时立刻失败，而不是发个残缺的 zip）
+          for f in index.js client.js cordis.patch.yml icon.svg README.md LICENSE locale/en.json locale/zh.json; do
+            test -f "$f" || { echo "缺少文件: $f"; exit 1; }
+          done
+
+          # 2. 语法检查
+          node --check index.js
+          node --check client.js
+          node -e 'const fs=require("node:fs");["package.json","locale/en.json","locale/zh.json"].forEach((f)=>JSON.parse(fs.readFileSync(f,"utf8")));console.log("JSON ok")'
+          test -s cordis.patch.yml || { echo "cordis.patch.yml 是空的"; exit 1; }
+
+          # 3. 版本号必须和 tag 一致（只在发版时校验，手动触发时 tag 由输入决定）
+          if [ "$EVENT" = "release" ]; then
+            VERSION=$(node -e 'process.stdout.write(JSON.parse(require("node:fs").readFileSync("package.json","utf8")).version)')
+            [ "v$VERSION" = "$TAG" ] || { echo "tag $TAG 与 package.json 的 v$VERSION 不一致"; exit 1; }
+            echo "版本一致: $TAG"
+          fi
+
+      - name: 打包 zip
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          STAGE="out/dsh-chat-perf-css"
+          mkdir -p "$STAGE/locale"
+          cp index.js client.js cordis.patch.yml icon.svg README.md LICENSE "$STAGE/"
+          cp locale/en.json locale/zh.json "$STAGE/locale/"
+
+          # -X 去掉多余的权限/时间戳属性，同样的输入产出同样的结构
+          (cd out && zip -X -r "../dsh-chat-perf-css-${TAG}.zip" dsh-chat-perf-css)
+
+          ls -l "dsh-chat-perf-css-${TAG}.zip"
+          unzip -l "dsh-chat-perf-css-${TAG}.zip"
+
+      - name: 上传到 Release
+        if: ${{ github.event_name == 'release' || inputs.dry_run == false }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" "dsh-chat-perf-css-${TAG}.zip" --clobber
