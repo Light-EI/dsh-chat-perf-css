@@ -40,7 +40,7 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 在 DSH 的插件管理器里安装，地址填：
 
 ```
-github:Light-EI/dsh-chat-perf-css#v1.0.1
+github:Light-EI/dsh-chat-perf-css#v1.0.0
 ```
 
 **装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
@@ -66,7 +66,7 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.1.zip`，把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.0.zip`，把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
