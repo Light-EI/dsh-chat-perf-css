@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+
+# 日志与本地运行产物
+*.log
+.plugin-manager/
+
+# 本地环境变量与凭据 —— 绝不要提交
+.env
+.env.*
+*.pem
+*.key
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 临时文件
+*.tmp
+*.bak

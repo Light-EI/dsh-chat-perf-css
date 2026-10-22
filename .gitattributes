@@ -1,0 +1,2 @@
+# 统一用 LF 存库、也检出为 LF，避免 Windows 上出现整文件"被修改"的假 diff
+* text=auto eol=lf

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chat render relief">
+  <rect x="5" y="9" width="54" height="38" rx="9" fill="#247bbf" opacity="0.12"/>
+  <rect x="12" y="17" width="40" height="4" rx="2" fill="#247bbf"/>
+  <rect x="12" y="25" width="40" height="4" rx="2" fill="#247bbf" opacity="0.45"/>
+  <rect x="12" y="33" width="24" height="4" rx="2" fill="#247bbf" opacity="0.22"/>
+  <path d="M41 37 L33 49 L40 46 L35 60 L49 43 L41 46 L48 37 Z" fill="#e8a33d"/>
+</svg>

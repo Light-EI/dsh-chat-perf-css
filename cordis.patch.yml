@@ -1,0 +1,10 @@
+# dsh-chat-perf-css bundle patch
+#
+# One row mounts the plugin. The whole effect lives in its Client half, which
+# injects a single stylesheet into the page it runs in.
+#
+# Nothing else is mounted. Remove this row (or the bundle) to uninstall.
+- insert:
+    - id: dsh-chat-perf-css
+      name: 'dsh-chat-perf-css'
+      config: {}
