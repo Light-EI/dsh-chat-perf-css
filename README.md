@@ -48,7 +48,7 @@ github:Light-EI/dsh-chat-perf-css#v1.0.1
 
 - 填的是 **pnpm 规格**，不是浏览器地址栏那个 URL。直接贴 `https://github.com/Light-EI/dsh-chat-perf-css`
   会被 pnpm 当成压缩包直链，装不上。
-- 本仓库目前是**私有**仓库：只有被邀请的账号能这样装。其他人用
+- 能访问本仓库就能这样装。拿不到访问权限、或不想让 pnpm 去拉 git 时，用
   [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip 走下面的手动安装。
 - DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
   「命中的类名还在不在」（见 [兼容性](#兼容性)）。
