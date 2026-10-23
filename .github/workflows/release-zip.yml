@@ -39,7 +39,7 @@ jobs:
           set -euo pipefail
 
           # 1. 出厂文件必须一个不少（有人改名/删文件时立刻失败，而不是发个残缺的 zip）
-          for f in index.js client.js cordis.patch.yml icon.svg README.md LICENSE locale/en.json locale/zh.json; do
+          for f in package.json index.js client.js cordis.patch.yml icon.svg README.md LICENSE locale/en.json locale/zh.json; do
             test -f "$f" || { echo "缺少文件: $f"; exit 1; }
           done
 
@@ -65,7 +65,7 @@ jobs:
           set -euo pipefail
           STAGE="out/dsh-chat-perf-css"
           mkdir -p "$STAGE/locale"
-          cp index.js client.js cordis.patch.yml icon.svg README.md LICENSE "$STAGE/"
+          cp package.json index.js client.js cordis.patch.yml icon.svg README.md LICENSE "$STAGE/"
           cp locale/en.json locale/zh.json "$STAGE/locale/"
 
           # -X 去掉多余的权限/时间戳属性，同样的输入产出同样的结构
