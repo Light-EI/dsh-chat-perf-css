@@ -100,7 +100,7 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 - 不碰 KaTeX 输出：不改 `output` 选项，不动 MathML，只是给 `.katex-display` 加一条 CSS。
 - 不碰模型 / 工具 / 凭据 / 系统提示词 / 会话日志 / 压缩逻辑。
 - 无网络请求、无 localStorage、无事件监听、无定时器、无 MutationObserver。
-- 零运行时依赖（只有 `peerDependencies: @deepseek-ai/cordis`）。
+- 零依赖：`dependencies` / `peerDependencies` 都不声明；CSS 在运行时由插件自己拼出来，Cordis 由 DSH 自身提供。
 
 ## 已知副作用（纯外观，滚动即自愈）
 
