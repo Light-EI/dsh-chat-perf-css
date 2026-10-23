@@ -2,14 +2,17 @@
 
 DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一条 CSS。**
 
-> **装它（复制这一行）**
+> **装它**
+>
+> 在 DSH 的「添加插件」里直接粘贴仓库地址：
 >
 > ```
-> github:Light-EI/dsh-chat-perf-css#semver:^1
+> https://github.com/Light-EI/dsh-chat-perf-css
 > ```
 >
-> 填进插件管理器的安装地址，装的是**最新的 1.x 正式版**。别复制浏览器地址栏或绿色 `Code` 按钮
-> 给的 `https://github.com/…`——那会被 pnpm 当作压缩包直链，下载到网页、装不上（详见[安装](#安装)）。
+> 安装器会把它记成 `github:Light-EI/dsh-chat-perf-css`，也就是 `main` 的最新代码。**本仓库保证
+> `main` 的代码永远等于最新正式版**（代码改动一律与 tag 同批进 `main`），所以这条路装到的就是最新版。
+> 需要锁定某个版本，见[安装](#安装)里的两种写法。
 
 ## 定位（先读这段）
 
@@ -46,35 +49,33 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
 ## 安装
 
-在 DSH 的插件市场 / 插件管理器里安装，地址填：
+DSH 的「添加插件」接受三种输入：包名、GitHub 仓库地址、本地目录。粘贴仓库地址即可：
 
 ```
-github:Light-EI/dsh-chat-perf-css#semver:^1
+https://github.com/Light-EI/dsh-chat-perf-css
 ```
 
-`#semver:^1` 的意思是「取所有 1.x tag 里最新的那个」—— 现在解析到 `v1.0.3`。以后发布新版，
-你重装或升级时会拿到当时最新的正式版；main 上那些还没发版的提交不会被带进来。
+安装器把它识别成 **git 依赖**（不是压缩包），装的是 `main` 分支的最新提交，并记成
+`github:Light-EI/dsh-chat-perf-css`。本仓库的发布纪律是**代码改动一律与 tag 同批进 `main`**，
+所以这条路拿到的代码始终等于最新正式版；`main` 上可能比最新 Release 多几个纯文档提交，不影响行为。
 
-不想点界面的话，命令行等价写法（`<profile>` 一般是 `desktop` 或 `web`）：
+要锁定版本时（排查问题、或在脚本里固定），在同一个地址后面加 `#` 片段即可：
+
+| 写法 | 装到 |
+|---|---|
+| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.3`），每次安装/升级重新选 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.3` | 那个确切版本，不随发版移动 |
+
+`github:Light-EI/dsh-chat-perf-css#…` 是等价的短写，命令行里两种都可以（`<profile>` 一般是 `desktop` 或 `web`）：
 
 ```
-dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#semver:^1
-```
-
-想锁死到某一个确切的版本（可复现、不随发版移动），把 `#` 后面换成 tag：
-
-```
-github:Light-EI/dsh-chat-perf-css#v1.0.3
+dsh plugin --profile <profile> add https://github.com/Light-EI/dsh-chat-perf-css
 ```
 
 **装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
 `dsh.profile.bundles` 一起写好。
 
-- 填的是 **pnpm 规格**，不是浏览器地址栏那个 URL。直接贴 `https://github.com/Light-EI/dsh-chat-perf-css`
-  会被 pnpm 当成压缩包直链，**而且它跟的是 main（未发布内容）、版本号也读不准**，别这么填。
-- 已经粘了 URL 的：`git+https://github.com/Light-EI/dsh-chat-perf-css.git#semver:^1` 也是合法规格
-  （`git+https` 是 pnpm 认的 git 形式，后面同样能带 `#semver:`）；它不带 `#semver:` 时只跟 main。
-- 这种装法要求本机有 **`git`**（pnpm 靠它把 tag 解析成 commit）。没有 git、或网络拉不动 git 时，
+- 这种装法要求本机有 **`git`**（pnpm 靠它把 tag / commit 解析出来）。没有 git、或网络拉不动 git 时，
   用 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip 走下面的手动安装。
 - DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
   「命中的类名还在不在」（见 [兼容性](#兼容性)）。
@@ -111,8 +112,9 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 
 ## 升级
 
-用 `#semver:^1` 装的话，在插件管理器里对它执行一次更新就行（命令行等价：
-`dsh plugin --profile <profile> update dsh-chat-perf-css`），会解析到当时最新的 1.x tag。
+用仓库地址（不带 `#`）或 `#semver:^1` 装的：在插件管理器里对它执行一次更新就行（命令行等价：
+`dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者会拿到 `main` 最新提交（等于最新正式版），
+后者会重新解析当时最新的 1.x tag。
 
 用 `#v1.0.3` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
 
