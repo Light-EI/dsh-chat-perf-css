@@ -2,6 +2,15 @@
 
 DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一条 CSS。**
 
+> **装它（复制这一行）**
+>
+> ```
+> github:Light-EI/dsh-chat-perf-css#semver:^1
+> ```
+>
+> 填进插件管理器的安装地址，装的是**最新的 1.x 正式版**。别复制浏览器地址栏或绿色 `Code` 按钮
+> 给的 `https://github.com/…`——那会被 pnpm 当作压缩包直链，下载到网页、装不上（详见[安装](#安装)）。
+
 ## 定位（先读这段）
 
 | 项 | 说明 |
@@ -63,6 +72,8 @@ github:Light-EI/dsh-chat-perf-css#v1.0.3
 
 - 填的是 **pnpm 规格**，不是浏览器地址栏那个 URL。直接贴 `https://github.com/Light-EI/dsh-chat-perf-css`
   会被 pnpm 当成压缩包直链，**而且它跟的是 main（未发布内容）、版本号也读不准**，别这么填。
+- 已经粘了 URL 的：`git+https://github.com/Light-EI/dsh-chat-perf-css.git#semver:^1` 也是合法规格
+  （`git+https` 是 pnpm 认的 git 形式，后面同样能带 `#semver:`）；它不带 `#semver:` 时只跟 main。
 - 这种装法要求本机有 **`git`**（pnpm 靠它把 tag 解析成 commit）。没有 git、或网络拉不动 git 时，
   用 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip 走下面的手动安装。
 - DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
