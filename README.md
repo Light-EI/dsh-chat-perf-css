@@ -40,13 +40,13 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 在 DSH 的插件市场 / 插件管理器里安装，地址填：
 
 ```
-github:Light-EI/dsh-chat-perf-css#v1.0.1
+github:Light-EI/dsh-chat-perf-css#v1.0.2
 ```
 
 不想点界面的话，命令行等价写法（`<profile>` 一般是 `desktop` 或 `web`）：
 
 ```
-dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.1
+dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.2
 ```
 
 **装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
@@ -61,18 +61,21 @@ dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.1
 
 ### 装完怎么确认
 
-在 DSH 窗口的开发者工具里执行：
+在 DSH 窗口的开发者工具里执行（用的是插件那条完整选择器，不要只看第一个匹配元素）：
 
 ```js
-getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibility
+const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_"]):not(svg)');
+`匹配 ${els.length} 个，生效 ${[...els].filter(e => getComputedStyle(e).contentVisibility === 'auto').length} 个`
 ```
 
-返回 `"auto"` 即生效；返回 `"visible"` 说明规则没命中，多半是 DSH 前端改了类名 —— 见 [兼容性](#兼容性)。
+- 「生效」数大于 0 即正常；
+- 「匹配」是 0，说明前端类名变了、规则没命中，页面只是没优化 —— 见 [兼容性](#兼容性)；
+- 不要用 `document.querySelector('[class*="_markdown_"]')` 只看第一个：第一个可能恰好是被规则排除的附件图标（`<svg>` 那个 `.md` 图标也带 `_markdown_` 类），会返回 `"visible"` 让你误以为没生效。
 
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.1.zip`，把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.2.zip`，把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
