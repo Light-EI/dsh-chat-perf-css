@@ -8,6 +8,8 @@ on:
     types: [published]
   push:
     branches: [main, dev]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
@@ -57,8 +59,8 @@ jobs:
           fi
 
       - name: 打包 zip
-        # push 触发只做上面的静态校验，不打不发（push 上没有 tag 可打）
-        if: ${{ github.event_name != 'push' }}
+        # 只有发版和手动触发才打包；push / PR 只做上面的静态校验（都没有 tag 可打）
+        if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
         env:
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |

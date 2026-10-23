@@ -10,9 +10,9 @@ DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一�
 > https://github.com/Light-EI/dsh-chat-perf-css
 > ```
 >
-> 安装器会把它记成 `github:Light-EI/dsh-chat-perf-css`，也就是 `main` 的最新代码。**本仓库的分支模型
-> 保证 `main` 的代码永远等于最新正式版**（开发都在 `dev` 上做，发版时才合并进 `main`），
-> 所以这条路装到的就是最新版。需要锁定某个版本，见[安装](#安装)里的两种写法。
+> 安装器会把它记成 `github:Light-EI/dsh-chat-perf-css`，也就是 `main` 的最新代码。**本仓库只在发版时
+> 改动插件代码**（平时在 `dev` 上开发，发版时合并进 `main` 并打 tag），所以这条路装到的插件行为与最新
+> 正式版一致；`main` 上可能夹着还没发版的文档改动。需要锁定某个版本，见[安装](#安装)里的两种写法。
 
 ## 定位（先读这段）
 
@@ -56,9 +56,9 @@ https://github.com/Light-EI/dsh-chat-perf-css
 ```
 
 安装器把它识别成 **git 依赖**（不是压缩包），装的是 `main` 分支的最新提交，并记成
-`github:Light-EI/dsh-chat-perf-css`。本仓库的分支模型是：**开发在 `dev` 上进行，只有发版时才把 `dev`
-合并进 `main` 并打 tag**。因此 `main` 的代码始终等于最新正式版；`main` 上可能比最新 Release 多几个
-纯文档提交，不影响行为。
+`github:Light-EI/dsh-chat-perf-css`。本仓库的规矩是：**插件代码只在发版时改动**——平时在 `dev` 上
+开发，发版时把 `dev` 合并进 `main` 并打 tag。所以这条路装到的插件行为与最新正式版一致；`main` 上可能
+夹着还没发版的文档改动（README、CI 之类），不影响插件行为。
 
 要锁定版本时（排查问题、或在脚本里固定），在同一个地址后面加 `#` 片段即可：
 
@@ -114,8 +114,8 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 ## 升级
 
 用仓库地址（不带 `#`）或 `#semver:^1` 装的：在插件管理器里对它执行一次更新就行（命令行等价：
-`dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者拿到 `main` 最新提交（只在发版时前进，
-所以等于最新正式版），后者重新解析当时最新的 1.x tag。
+`dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者拿到 `main` 最新提交（插件代码与最新
+正式版一致），后者重新解析当时最新的 1.x tag。
 
 用 `#v1.0.3` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
 
