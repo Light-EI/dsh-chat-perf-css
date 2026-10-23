@@ -40,13 +40,13 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 在 DSH 的插件市场 / 插件管理器里安装，地址填：
 
 ```
-github:Light-EI/dsh-chat-perf-css#v1.0.2
+github:Light-EI/dsh-chat-perf-css#v1.0.3
 ```
 
 不想点界面的话，命令行等价写法（`<profile>` 一般是 `desktop` 或 `web`）：
 
 ```
-dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.2
+dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.3
 ```
 
 **装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
@@ -75,7 +75,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.2.zip`，把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.3.zip`，把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
@@ -127,6 +127,10 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
 | Firefox / Safari | Firefox 支持较晚，Safari 17.4+ 起支持。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
+
+## 反馈
+
+用着不对、或者某处没生效，直接开 [Issue](https://github.com/Light-EI/dsh-chat-perf-css/issues) 就行。报「没生效」时请一并给出：DSH 版本，以及「装完怎么确认」那条命令的输出（匹配数 / 生效数）。
 
 ## 许可
 

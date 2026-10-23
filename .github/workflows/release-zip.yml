@@ -68,8 +68,11 @@ jobs:
           cp package.json index.js client.js cordis.patch.yml icon.svg README.md LICENSE "$STAGE/"
           cp locale/en.json locale/zh.json "$STAGE/locale/"
 
-          # -X 去掉多余的权限/时间戳属性，同样的输入产出同样的结构
-          (cd out && zip -X -r "../dsh-chat-perf-css-${TAG}.zip" dsh-chat-perf-css)
+          # 统一所有文件的 mtime（zip 会把它写进条目里），再用 -X 去掉额外的权限/宿主属性，
+          # 这样同一个 tag 重打包产出的 zip 是字节一致的，sha256 不会因为打包时刻变化。
+          # 注意：Touch 用 UTC，runner 也是 UTC，所以结果跟机器时区无关。
+          find "$STAGE" -exec touch -t 198001010000.00 {} +
+          (cd out && TZ=UTC zip -X -r "../dsh-chat-perf-css-${TAG}.zip" dsh-chat-perf-css)
 
           # 校验和一起发，用户拿到 zip 可以自己核对
           sha256sum "dsh-chat-perf-css-${TAG}.zip" > "dsh-chat-perf-css-${TAG}.zip.sha256"
