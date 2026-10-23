@@ -6,6 +6,8 @@ name: release-zip
 on:
   release:
     types: [published]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
@@ -27,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
 
       - name: 校验文件齐全、语法可解析、版本号对得上 tag
         env:
@@ -55,6 +57,8 @@ jobs:
           fi
 
       - name: 打包 zip
+        # push 触发只做上面的静态校验，不打不发（push 上没有 tag 可打）
+        if: ${{ github.event_name != 'push' }}
         env:
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
@@ -67,12 +71,20 @@ jobs:
           # -X 去掉多余的权限/时间戳属性，同样的输入产出同样的结构
           (cd out && zip -X -r "../dsh-chat-perf-css-${TAG}.zip" dsh-chat-perf-css)
 
-          ls -l "dsh-chat-perf-css-${TAG}.zip"
+          # 校验和一起发，用户拿到 zip 可以自己核对
+          sha256sum "dsh-chat-perf-css-${TAG}.zip" > "dsh-chat-perf-css-${TAG}.zip.sha256"
+
+          ls -l "dsh-chat-perf-css-${TAG}.zip" "dsh-chat-perf-css-${TAG}.zip.sha256"
           unzip -l "dsh-chat-perf-css-${TAG}.zip"
+          cat "dsh-chat-perf-css-${TAG}.zip.sha256"
 
       - name: 上传到 Release
         if: ${{ github.event_name == 'release' || inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$TAG" "dsh-chat-perf-css-${TAG}.zip" --clobber
+        run: >-
+          gh release upload "$TAG"
+          "dsh-chat-perf-css-${TAG}.zip"
+          "dsh-chat-perf-css-${TAG}.zip.sha256"
+          --clobber

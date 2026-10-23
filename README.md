@@ -37,10 +37,16 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
 ## 安装
 
-在 DSH 的插件管理器里安装，地址填：
+在 DSH 的插件市场 / 插件管理器里安装，地址填：
 
 ```
-github:Light-EI/dsh-chat-perf-css#v1.0.0
+github:Light-EI/dsh-chat-perf-css#v1.0.1
+```
+
+不想点界面的话，命令行等价写法（`<profile>` 一般是 `desktop` 或 `web`）：
+
+```
+dsh plugin --profile <profile> add github:Light-EI/dsh-chat-perf-css#v1.0.1
 ```
 
 **装完即生效**，不需要再改任何配置 —— 安装器的动作单位是 bundle，会把 `dependencies` 与
@@ -66,7 +72,7 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.0.zip`，把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v1.0.1.zip`，把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
@@ -100,11 +106,12 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 
 | 现象 | 说明 |
 |---|---|
-| 滚动条长度是估算值 | 屏外部分用占位高度，渲染过之后会记住真实高度 |
+| 滚动条长度是估算值 | 屏外部分用固定占位高度估计（消息体 320px、块级公式 90px），渲染过之后会记住真实高度。短消息会偏长、长代码块会偏短，滚过一遍即收敛 |
 | 滚到未渲染区可能轻微跳动 | 该区域首次进入视口才真正渲染 |
-| 打印长会话可能漏掉屏外正文 | `content-visibility` 的固有行为 |
+| 会话内搜索跳转先落到估算位置 | 「跳到某条消息」依赖 `scrollIntoView`，命中占位高度，渲染后位置会被校正 |
+| 把整页渲染成图或 PDF 的工具可能漏掉屏外内容 | 打印 / 长截图 / 导出类工具沿用视口判断。CSSWG 2024-06 已裁定「打印时按可见处理」，但各引擎跟进时间不一 |
 | toast 位置可能轻微偏移 | toast 用锚元素 `getBoundingClientRect()` 定位，锚点在屏外时取到占位矩形 |
-| 浏览器 Ctrl+F 可能搜不到被跳过的内容 | 桌面端无影响，DSH 桌面版没有页内查找功能 |
+| 浏览器 Ctrl+F 能搜到，但首次搜索可能卡一下 | 命中后会被强制渲染，定位可能需要再滚动校正一次。DSH 桌面版没有页内查找，不受影响 |
 
 浮层不会被裁剪：消息正文容器没有 `position:absolute/fixed/sticky`，菜单、tooltip、
 图片查看器都 portal 到 `document.body`。
@@ -113,7 +120,7 @@ getComputedStyle(document.querySelector('[class*="_markdown_"]')).contentVisibil
 
 | 维度 | 说明 |
 |---|---|
-| DSH 版本 | 在 DSH **0.2.1-rc.2** 上实测通过。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
+| DSH 版本 | 在 DSH **0.2.1-rc.2** 上实测通过。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
 | Firefox / Safari | Firefox 支持较晚，Safari 17.4+ 起支持。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
