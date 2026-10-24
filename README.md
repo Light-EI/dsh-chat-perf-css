@@ -169,7 +169,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 | DSH 版本 | 在 DSH **0.2.1-rc.2 / 0.2.1-rc.3** 上实测通过（2026-10-22 / 2026-10-24）。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
-| Firefox / Safari | Firefox 支持较晚，Safari 17.4+ 起支持。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
+| Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
 
 ## 反馈
 

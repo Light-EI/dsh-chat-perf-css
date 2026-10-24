@@ -95,7 +95,7 @@ jobs:
             tar -tzf dsh-chat-perf-css.tgz | grep -qx -- "$f" || { echo "tgz 根部缺 $f"; exit 1; }
           done
           if tar -tzf dsh-chat-perf-css.tgz | grep -qv '^\./'; then
-            echo "tgz 里有不以下划线开头的路径，可能套了目录"; tar -tzf dsh-chat-perf-css.tgz; exit 1
+            echo "tgz 里有不以 ./ 开头的路径，可能套了目录"; tar -tzf dsh-chat-perf-css.tgz; exit 1
           fi
 
           ls -l "dsh-chat-perf-css-${TAG}.zip" "dsh-chat-perf-css-${TAG}.zip.sha256" dsh-chat-perf-css.tgz dsh-chat-perf-css.tgz.sha256
