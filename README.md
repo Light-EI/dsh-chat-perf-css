@@ -64,8 +64,17 @@ https://github.com/Light-EI/dsh-chat-perf-css
 
 | 写法 | 装到 |
 |---|---|
-| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.3`），每次安装/升级重新选 |
-| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.3` | 那个确切版本，不随发版移动 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.4`），每次安装/升级重新选 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.4` | 那个确切版本，不随发版移动 |
+
+**不想装 `git`？** 用 Release 附带的预构建包，同样是"填进去就能装"，但走的是 HTTPS 下载而不是 git：
+
+```
+https://github.com/Light-EI/dsh-chat-perf-css/releases/latest/download/dsh-chat-perf-css.tgz
+```
+
+这个地址永远指向最新正式版（资产名固定，不随版本号变），也可以离线下载后用
+`dsh plugin --profile <profile> add <本地路径>/dsh-chat-perf-css.tgz` 安装。
 
 `github:Light-EI/dsh-chat-perf-css#…` 是等价的短写，命令行里两种都可以（`<profile>` 一般是 `desktop` 或 `web`）：
 
@@ -77,7 +86,8 @@ dsh plugin --profile <profile> add https://github.com/Light-EI/dsh-chat-perf-css
 `dsh.profile.bundles` 一起写好。
 
 - 这种装法要求本机有 **`git`**（pnpm 靠它把 tag / commit 解析出来）。没有 git、或网络拉不动 git 时，
-  用 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip 走下面的手动安装。
+  用上面的预构建 `.tgz`，或 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip
+  走手动安装。
 - DSH **0.2.1-rc.2 / 0.2.1-rc.3** 上实测通过。插件只注入 CSS、不调用插件 API，版本差异通常只影响
   「命中的类名还在不在」（见 [兼容性](#兼容性)）。
 
@@ -97,7 +107,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.3.zip`），把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.4.zip`），把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
@@ -117,7 +127,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 `dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者拿到 `main` 最新提交（插件代码与最新
 正式版一致），后者重新解析当时最新的 1.x tag。
 
-用 `#v1.0.3` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
+用 `#v1.0.4` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
 
 手动安装的，重新解压覆盖 `plugins\dsh-chat-perf-css\` 目录即可。任何方式升级后重开窗口生效。
 升级只替换插件文件，`dsh.profile.bundles` 里的登记不变。

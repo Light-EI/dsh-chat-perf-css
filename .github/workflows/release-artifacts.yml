@@ -1,6 +1,9 @@
-name: release-zip
+name: release-artifacts
 
-# 发版时自动打包 zip 附件，消灭「zip 与 tag 内容不一致」这类手滑。
+# 发版时自动产出三类附件，消灭「附件与 tag 内容不一致」这类手滑：
+#   dsh-chat-perf-css-v<tag>.zip    给人用的（顶层带目录，解压即可手动安装）
+#   dsh-chat-perf-css.tgz           给包管理器用的（内容平铺在根部，可被 pnpm/dsh 直接安装）
+#   *.sha256                        两个包各自的校验和
 # 手动触发（dry_run=true）只打包不上传，用来验证流程本身。
 
 on:
@@ -13,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 要打包的 tag（例如 v1.0.0）
+        description: 要打包的 tag（例如 v1.0.4）
         required: true
       dry_run:
         description: 只打包，不上传
@@ -40,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          # 1. 出厂文件必须一个不少（有人改名/删文件时立刻失败，而不是发个残缺的 zip）
+          # 1. 出厂文件必须一个不少（有人改名/删文件时立刻失败，而不是发个残缺的包）
           for f in package.json index.js client.js cordis.patch.yml icon.svg README.md LICENSE locale/en.json locale/zh.json; do
             test -f "$f" || { echo "缺少文件: $f"; exit 1; }
           done
@@ -58,7 +61,7 @@ jobs:
             echo "版本一致: $TAG"
           fi
 
-      - name: 打包 zip
+      - name: 打包 zip（给人）与 tgz（给包管理器）
         # 只有发版和手动触发才打包；push / PR 只做上面的静态校验（都没有 tag 可打）
         if: ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
         env:
@@ -70,18 +73,35 @@ jobs:
           cp package.json index.js client.js cordis.patch.yml icon.svg README.md LICENSE "$STAGE/"
           cp locale/en.json locale/zh.json "$STAGE/locale/"
 
-          # 统一所有文件的 mtime（zip 会把它写进条目里），再用 -X 去掉额外的权限/宿主属性，
-          # 这样同一个 tag 重打包产出的 zip 是字节一致的，sha256 不会因为打包时刻变化。
-          # 注意：Touch 用 UTC，runner 也是 UTC，所以结果跟机器时区无关。
+          # 统一所有文件的 mtime（两个归档格式都会把它写进条目里），再用 -X / --mtime 去掉额外的
+          # 权限与宿主属性，这样同一个 tag 重打包产出字节一致，sha256 不会因为打包时刻变化。
+          # 注意：touch 用 UTC，runner 也是 UTC，所以结果跟机器时区无关。
           find "$STAGE" -exec touch -t 198001010000.00 {} +
+
           (cd out && TZ=UTC zip -X -r "../dsh-chat-perf-css-${TAG}.zip" dsh-chat-perf-css)
 
-          # 校验和一起发，用户拿到 zip 可以自己核对
-          sha256sum "dsh-chat-perf-css-${TAG}.zip" > "dsh-chat-perf-css-${TAG}.zip.sha256"
+          # tgz 必须是「内容平铺在根部」——包管理器按包 tarball 处理它，外面套一层目录的话
+          # pnpm 在归档根部找不到 package.json，直接装不上。
+          # gzip -n 不写文件名与时间戳，是字节可复现的另一半。
+          ( cd "$STAGE" && tar --sort=name --mtime='1980-01-01 00:00:00Z' --owner=0 --group=0 --numeric-owner \
+              -cf - . | gzip -n -9 > ../../dsh-chat-perf-css.tgz )
 
-          ls -l "dsh-chat-perf-css-${TAG}.zip" "dsh-chat-perf-css-${TAG}.zip.sha256"
+          # 校验和一起发，用户拿到任何一个包都能自己核对
+          sha256sum "dsh-chat-perf-css-${TAG}.zip" > "dsh-chat-perf-css-${TAG}.zip.sha256"
+          sha256sum "dsh-chat-perf-css.tgz" > "dsh-chat-perf-css.tgz.sha256"
+
+          # tgz 结构自查：9 个出厂文件都在根部，且没有多套一层目录
+          for f in ./package.json ./index.js ./client.js ./cordis.patch.yml ./icon.svg ./README.md ./LICENSE ./locale/en.json ./locale/zh.json; do
+            tar -tzf dsh-chat-perf-css.tgz | grep -qx -- "$f" || { echo "tgz 根部缺 $f"; exit 1; }
+          done
+          if tar -tzf dsh-chat-perf-css.tgz | grep -qv '^\./'; then
+            echo "tgz 里有不以下划线开头的路径，可能套了目录"; tar -tzf dsh-chat-perf-css.tgz; exit 1
+          fi
+
+          ls -l "dsh-chat-perf-css-${TAG}.zip" "dsh-chat-perf-css-${TAG}.zip.sha256" dsh-chat-perf-css.tgz dsh-chat-perf-css.tgz.sha256
           unzip -l "dsh-chat-perf-css-${TAG}.zip"
-          cat "dsh-chat-perf-css-${TAG}.zip.sha256"
+          tar -tzvf dsh-chat-perf-css.tgz
+          cat "dsh-chat-perf-css-${TAG}.zip.sha256" dsh-chat-perf-css.tgz.sha256
 
       - name: 上传到 Release
         # 注意：不能写 `inputs.dry_run == false` —— 非 dispatch 事件里 inputs 是 null，
@@ -94,4 +114,6 @@ jobs:
           gh release upload "$TAG"
           "dsh-chat-perf-css-${TAG}.zip"
           "dsh-chat-perf-css-${TAG}.zip.sha256"
+          dsh-chat-perf-css.tgz
+          dsh-chat-perf-css.tgz.sha256
           --clobber
