@@ -29,7 +29,7 @@ window.__ModuleLoader__.load({
   id: 'dsh-chat-perf-css',
   factory() {
     const RULES = [
-      '/* dsh-chat-perf-css: off-screen message bodies and block formulas skip style, layout and paint */',
+      '/* dsh-chat-perf-css: off-screen message bodies skip style, layout and paint */',
       // Message body container: the front-end renders it as a CSS-module class
       // (`_markdown_<hash>_<line>`), so match the stable key part, not the hash.
       //
@@ -39,9 +39,13 @@ window.__ModuleLoader__.load({
       //   with `_icon_<hash>_1`. Without this, off-screen attachment icons would
       //   reserve a 320px placeholder box.
       //   `:not(svg)` — that icon class is applied to the <svg> element itself.
+      // v1.0.5 dropped the per-formula rule (`.katex-display` + `auto 90px`): the
+      // placeholder is far below the real height of a display formula, so every
+      // reveal rewrote the document height and scroll anchoring chained those
+      // rewrites together — dragging a formula-heavy conversation could freeze for
+      // tens of seconds. One coarse rule stays; what it no longer covers is
+      // scrolling *inside* a single enormous message (documented as a known limit).
       '[class*="_markdown_"]:not([class*="_icon_"]):not(svg){content-visibility:auto;contain-intrinsic-size:auto 320px}',
-      // Block formulas: KaTeX ships this class name itself.
-      '.katex-display{content-visibility:auto;contain-intrinsic-size:auto 90px}',
     ].join('\n');
 
     return {
