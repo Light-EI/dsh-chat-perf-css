@@ -19,7 +19,7 @@ DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一�
 | 项 | 说明 |
 |---|---|
 | ✅ 它做 | **滚动 / 重绘减负** —— 让视口外的消息子树跳过 style / layout / paint |
-| ❌ 它不做 | **不解决流式生成时公式反复重算**。生成过程中，可见区域的公式仍会随每个增量重新排版；那是渲染逻辑本身的事，与「屏外跳过」是两回事，本插件对此无能为力 |
+| ❌ 它不做 | **不解决流式生成时公式反复重算**（那是渲染逻辑本身的事）；也**不给「同一条超长消息内部」的滚动减负** —— 一条消息就是一个整体，要么整条渲染，要么整条跳过 |
 | ⚠️ 何时该卸载 | DSH 官方一旦加入**虚拟滚动**（只把视口附近的消息节点挂进 DOM），本插件的收益基本归零，届时**请卸载它** |
 
 一句话：它治的是「消息越堆越多、滚动变卡」，不是「生成时公式抖动」。
@@ -29,14 +29,13 @@ DSH 长会话渲染减负插件。**它只做一件事：往页面里注入一�
 DSH 的 ChatView 会把每一条消息节点全量挂进 DOM，长会话里既没有虚拟滚动，也没有
 `content-visibility`。几千条消息之后，滚动和重绘就开始卡。
 
-本插件不去改渲染逻辑（那是上游的事），只是让**视口外**的消息正文与块级公式跳过
+本插件不去改渲染逻辑（那是上游的事），只是让**视口外**的消息正文跳过
 style / layout / paint，由浏览器自己决定什么时候真正渲染。
 
-## 注入的两条规则
+## 注入的规则
 
 ```css
 [class*="_markdown_"]:not([class*="_icon_"]):not(svg){content-visibility:auto;contain-intrinsic-size:auto 320px}
-.katex-display{content-visibility:auto;contain-intrinsic-size:auto 90px}
 ```
 
 - 命中消息正文容器（前端用 CSS-module 类名 `_markdown_<hash>_<line>`，所以只匹配稳定的
@@ -46,6 +45,9 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
   不排除的话屏外附件图标会占一个 320px 的坑。
 - `contain-intrinsic-size: auto <size>` 给屏外子树一个占位高度；一旦某子树被渲染过，
   浏览器会记住它的真实高度。
+- **就这一条。** v1.0.4 及更早还额外给每个块级公式（`.katex-display`，占位 90px）单独开了一层：
+  公式的真实高度远大于占位，滚动时每次露出都会改动文档总高度，滚动锚定再把这些改动串成连锁反应，
+  结果一拖动就卡死几十秒。v1.0.5 删掉了它。
 
 ## 安装
 
@@ -64,8 +66,8 @@ https://github.com/Light-EI/dsh-chat-perf-css
 
 | 写法 | 装到 |
 |---|---|
-| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.4`），每次安装/升级重新选 |
-| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.4` | 那个确切版本，不随发版移动 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.5`），每次安装/升级重新选 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.5` | 那个确切版本，不随发版移动 |
 
 **不想装 `git`？** 用 Release 附带的预构建包，同样是"填进去就能装"，但走的是 HTTPS 下载而不是 git：
 
@@ -107,7 +109,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.4.zip`），把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.5.zip`），把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
@@ -127,7 +129,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 `dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者拿到 `main` 最新提交（插件代码与最新
 正式版一致），后者重新解析当时最新的 1.x tag。
 
-用 `#v1.0.4` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
+用 `#v1.0.5` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
 
 手动安装的，重新解压覆盖 `plugins\dsh-chat-perf-css\` 目录即可。任何方式升级后重开窗口生效。
 升级只替换插件文件，`dsh.profile.bundles` 里的登记不变。
@@ -143,7 +145,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 ## 它不会做什么
 
 - 宿主半边是空的：`export function apply() {}`，不注册服务、不注入依赖、不改配置。
-- 不碰 KaTeX 输出：不改 `output` 选项，不动 MathML，只是给 `.katex-display` 加一条 CSS。
+- 不碰 KaTeX 输出：不改 `output` 选项，不动 MathML，也不给公式加任何 CSS 规则。
 - 不碰模型 / 工具 / 凭据 / 系统提示词 / 会话日志 / 压缩逻辑。
 - 无网络请求、无 localStorage、无事件监听、无定时器、无 MutationObserver。
 - 零依赖：`dependencies` / `peerDependencies` 都不声明；CSS 在运行时由插件自己拼出来，Cordis 由 DSH 自身提供。
@@ -152,7 +154,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 
 | 现象 | 说明 |
 |---|---|
-| 滚动条长度是估算值 | 屏外部分用固定占位高度估计（消息体 320px、块级公式 90px），渲染过之后会记住真实高度。短消息会偏长、长代码块会偏短，滚过一遍即收敛 |
+| 滚动条长度是估算值 | 屏外部分用固定占位高度估计（消息体 320px），渲染过之后会记住真实高度。短消息会偏长、长代码块会偏短，滚过一遍即收敛 |
 | 滚到未渲染区可能轻微跳动 | 该区域首次进入视口才真正渲染 |
 | 会话内搜索跳转先落到估算位置 | 「跳到某条消息」依赖 `scrollIntoView`，命中占位高度，渲染后位置会被校正 |
 | 把整页渲染成图或 PDF 的工具可能漏掉屏外内容 | 打印 / 长截图 / 导出类工具沿用视口判断。CSSWG 2024-06 已裁定「打印时按可见处理」，但各引擎跟进时间不一 |
@@ -169,7 +171,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 | DSH 版本 | 在 DSH **0.2.1-rc.2 / 0.2.1-rc.3** 上实测通过（2026-10-22 / 2026-10-24）。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
-| Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这两条规则 —— 退化为「没有优化」，不会出错 |
+| Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这条规则 —— 退化为「没有优化」，不会出错 |
 
 ## 反馈
 

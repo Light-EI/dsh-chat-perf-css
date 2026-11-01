@@ -1,8 +1,8 @@
 {
   "name": "dsh-chat-perf-css",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
-  "description": "Long-conversation render relief for the DSH chat view: off-screen message bodies and block formulas skip style, layout and paint.",
+  "description": "Long-conversation render relief for the DSH chat view: off-screen message bodies skip style, layout and paint.",
   "keywords": [
     "dsh",
     "dsh-plugin",
