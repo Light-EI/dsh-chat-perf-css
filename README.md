@@ -66,8 +66,8 @@ https://github.com/Light-EI/dsh-chat-perf-css
 
 | 写法 | 装到 |
 |---|---|
-| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.5`），每次安装/升级重新选 |
-| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.5` | 那个确切版本，不随发版移动 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#semver:^1` | 所有 1.x tag 里最新的那个（现在解析到 `v1.0.6`），每次安装/升级重新选 |
+| `https://github.com/Light-EI/dsh-chat-perf-css#v1.0.6` | 那个确切版本，不随发版移动 |
 
 **不想装 `git`？** 用 Release 附带的预构建包，同样是"填进去就能装"，但走的是 HTTPS 下载而不是 git：
 
@@ -109,7 +109,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 <details>
 <summary>手动安装（离线、没有仓库权限，或不走插件管理器时用）</summary>
 
-1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.5.zip`），把 `dsh-chat-perf-css` 目录放进
+1. 解压 Release 里的 `dsh-chat-perf-css-v<版本>.zip`（例如 `…-v1.0.6.zip`），把 `dsh-chat-perf-css` 目录放进
    `<profile>\plugins\dsh-chat-perf-css\`。
 2. 在该 profile 的 `package.json` 里：
    - `dependencies` 增加 `"dsh-chat-perf-css": "link:./plugins/dsh-chat-perf-css"`
@@ -129,7 +129,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 `dsh plugin --profile <profile> update dsh-chat-perf-css`）——前者拿到 `main` 最新提交（插件代码与最新
 正式版一致），后者重新解析当时最新的 1.x tag。
 
-用 `#v1.0.5` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
+用 `#v1.0.6` 这类锁定写法装的，不会自己动 —— 要把安装地址里的 tag 换成新的再装一次。
 
 手动安装的，重新解压覆盖 `plugins\dsh-chat-perf-css\` 目录即可。任何方式升级后重开窗口生效。
 升级只替换插件文件，`dsh.profile.bundles` 里的登记不变。
@@ -168,7 +168,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 
 | 维度 | 说明 |
 |---|---|
-| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）。**0.2.2-rc.1** 做过源码核对：消息体类名、CSS Modules 命名规则、客户端清单接口都没变（2026-11-05），但没在该版本上跑过。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
+| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）。**0.2.2-rc.1 已适配**（2026-11-05，接口核对）：消息体类名、CSS Modules 命名规则、客户端清单与模块加载接口逐项比对均未变，插件代码无需改动。它在 rc.1 里新修的 Go 代码高亮卡死、以及新增的「折叠后只保留最后一条回答」开关，与本插件互不冲突。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
 | Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这条规则 —— 退化为「没有优化」，不会出错 |
