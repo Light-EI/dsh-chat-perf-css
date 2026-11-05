@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Chat Render Relief",
-    "description": "Lets off-screen message bodies and block formulas skip style, layout and paint, so long conversations scroll and repaint faster."
+    "description": "Lets off-screen message bodies skip style, layout and paint, so long conversations stay responsive."
   }
 }
