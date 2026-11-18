@@ -94,7 +94,7 @@ dsh plugin --profile <profile> add https://github.com/Light-EI/dsh-chat-perf-css
 - 这种装法要求本机有 **`git`**（pnpm 靠它把 tag / commit 解析出来）。没有 git、或网络拉不动 git 时，
   用上面的预构建 `.tgz`，或 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip
   走手动安装。
-- DSH **0.2.1-rc.2 起各版本实测或核对通过**（最新为 0.2.2-rc.3），见[兼容性](#兼容性)。插件只注入 CSS、不调用插件 API，版本差异通常只影响
+- DSH **0.2.1-rc.2 起各版本实测或核对通过**（最新为 0.2.2-rc.4），见[兼容性](#兼容性)。插件只注入 CSS、不调用插件 API，版本差异通常只影响
   「命中的类名还在不在」。
 
 ### 装完怎么确认
@@ -172,7 +172,7 @@ const els = document.querySelectorAll('[class*="_markdown_"]:not([class*="_icon_
 
 | 维度 | 说明 |
 |---|---|
-| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）；**0.2.2-rc.1、rc.2、rc.3 已适配**（2026-11-05 / 11-11 / 11-13，接口核对）。逐项比对过：消息体类名（`clsx(css.markdown)` 与 `[hash]_[local]` 命名规则）、图标类共存、`ChatFlow` 全量渲染、客户端清单与模块加载接口均未变，插件代码无需改动。rc.1 的 Go 高亮卡死修复与「折叠后只保留最后一条回答」开关、rc.2 的 markdown fence 包裹层与「向上加载更早消息」、rc.3 新增的「DeepSeek 会话导入」实验插件，都不与本插件冲突（rc.3 与本插件相关的契约文件与 rc.2 逐字节相同）。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
+| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）；**0.2.2-rc.1、rc.2、rc.3、rc.4 已适配**（2026-11-05 / 11-11 / 11-13 / 11-17，接口核对）。逐项比对过：消息体类名（`clsx(css.markdown)` 与 `[hash]_[local]` 命名规则）、图标类共存、`ChatFlow` 全量渲染、客户端清单与模块加载接口均未变，插件代码无需改动。rc.1 的 Go 高亮卡死修复与「折叠后只保留最后一条回答」开关、rc.2 的 markdown fence 包裹层与「向上加载更早消息」、rc.3 新增的「DeepSeek 会话导入」实验插件，都不与本插件冲突（rc.3、rc.4 与本插件相关的契约文件与 rc.2 逐字节相同）。rc.4 是纯修复版：源码只动了 `experimental/liveshare` 的桌面端分享、`llm` 与 `llm-deepseek` 的异常响应处理三个文件，客户端 DOM/CSS 契约一个字节没变，全仓 `content-visibility`/`contain-intrinsic` 仍为 0 处、`useVirtualizer` 仍只在轮次导航、轨迹表与会话检查表。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`，低于此版本的安装器会直接拒绝安装/激活——省得出现「装上了但页面没变化」。插件只注入 CSS、不调用插件 API，一般不受版本影响 |
 | 会静默失效的地方 | 命中依赖前端 CSS-module 类名 `_markdown_<hash>_<line>`。DSH 前端一旦改名或改结构，规则会**静默失效**：页面一切正常，只是没有优化。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
 | Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这条规则 —— 退化为「没有优化」，不会出错 |
