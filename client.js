@@ -14,16 +14,17 @@
  * `contain-intrinsic-size: auto <size>` keeps a stable placeholder size (the
  * last rendered size is remembered once a subtree has been seen).
  *
- * Lifecycle: the style tag is removed when the plugin is unloaded. Two
- * independent mechanisms cover that:
- *   1. the disposer registered below through `ctx.effect`;
- *   2. the module system's `removeOwnedStyles(id)`, which drops every
- *      `style[data-plugin="dsh-chat-perf-css"]` when the module is invalidated,
- *      replaced (HMR) or pruned — the tag carries that attribute on purpose so
- *      this second path can find it.
- * Note: the automatic tagging (`claimStyles`) only covers styles created while
- * the module *factory* runs; this style is created later, inside `apply`, so it
- * has to set `data-plugin` itself.
+ * Lifecycle: the style tag is removed when the plugin is unloaded, through the
+ * disposer registered below with `ctx.effect`.
+ *
+ * Until DSH 0.2.2 a second mechanism covered the paths that skip a disposer: the
+ * module system swept every `style[data-plugin]` tag on invalidation, HMR
+ * replacement or pruning (`removeOwnedStyles`), which is why the tag carries that
+ * attribute. 0.2.3 dropped the sweep — the framework now installs only the
+ * stylesheets a module's own build metadata declares, and owns nothing else — so
+ * the attribute is a marker now, not a cleanup hook. `apply` therefore removes any
+ * earlier copy before adding its own: re-materialization that runs before a
+ * disposer cannot leave two copies of the rule behind.
  */
 window.__ModuleLoader__.load({
   id: 'dsh-chat-perf-css',
@@ -50,6 +51,9 @@ window.__ModuleLoader__.load({
 
     return {
       apply(ctx) {
+        // One tag per page: a re-materialized module may run before any disposer.
+        for (const stale of document.querySelectorAll('style[data-plugin="dsh-chat-perf-css"]')) stale.remove();
+
         const tag = document.createElement('style');
         tag.setAttribute('data-plugin', 'dsh-chat-perf-css');
         tag.textContent = RULES;
