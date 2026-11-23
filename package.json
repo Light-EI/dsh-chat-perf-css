@@ -1,6 +1,6 @@
 {
   "name": "dsh-chat-perf-css",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "description": "Long-conversation render relief for the DSH chat view: off-screen message bodies skip style, layout and paint.",
   "keywords": [

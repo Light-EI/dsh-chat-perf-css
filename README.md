@@ -47,13 +47,18 @@ style / layout / paint，由浏览器自己决定什么时候真正渲染。
   聊天列是唯一会无限变长的界面，所以只留它。
 - 命中消息正文容器。前端 CSS-module 的类名有两种形态，插件两种都认：
   - `_<local>_<hash>_<line>`，例如 `_markdown_13jw0_5`（**0.2.2 及更早**，由 Vite 生成哈希）；
-  - `<hash>_<local>`，例如 `NkM3Kq_markdown`（**0.2.3 起**，`ui-primitives` 的样式改由 module 元数据
+  - `<hash>_<local>`，例如 `vD2sAq_markdown`（**0.2.3 起**，`ui-primitives` 的样式改由 module 元数据
     在挂载时安装，哈希改由 lightningcss 的 `[hash]_[local]` 生成，本地名 `markdown` 从前面挪到了后面）。
 
   所以选择器里是 `:is([class*="_markdown_"], [class$="_markdown"], [class*="_markdown "])` 三段：
   第一段认旧形态，后两段认新形态（单个类名结束 / 后面还跟着别的类名）。
+
+  0.2.3-alpha.2 的官方前端产物里实测：整个包里只有两个 `*_markdown` 类名 —— `vD2sAq_markdown`
+  （`MarkdownText` 的 `.markdown`）与 `b6TLMa_markdown`（`FileTypeIcon` 的 `.markdown`），
+  正好是这条规则要命中的那一个、和要排除的那一个。
 - `:not([class*="_icon"]):not(svg)` 两个排除项：文件类型图标组件也带 `markdown` 类
-  （`.md` 图标，与 `icon` 类同挂在 `<svg>` 上，两种命名形态下都如此），不排除的话屏外附件图标
+  （`.md` 图标在 0.2.2 里是 `_markdown_1wejo_28` + `_icon_1wejo_1`，在 0.2.3 里是
+  `b6TLMa_markdown` + `b6TLMa_icon`，都挂在 `<svg>` 上），不排除的话屏外附件图标
   会占一个 320px 的坑。
 - `contain-intrinsic-size: auto <size>` 给屏外子树一个占位高度；一旦某子树被渲染过，
   浏览器会记住它的真实高度。
@@ -102,7 +107,7 @@ dsh plugin --profile <profile> add https://github.com/Light-EI/dsh-chat-perf-css
 - 这种装法要求本机有 **`git`**（pnpm 靠它把 tag / commit 解析出来）。没有 git、或网络拉不动 git 时，
   用上面的预构建 `.tgz`，或 [Release](https://github.com/Light-EI/dsh-chat-perf-css/releases) 里的 zip
   走手动安装。
-- DSH **0.2.1-rc.2 起各版本实测或核对通过**（最新为 0.2.3-alpha.1），见[兼容性](#兼容性)。插件只注入 CSS、不调用插件 API，版本差异通常只影响
+- DSH **0.2.1-rc.2 起各版本实测或核对通过**（最新为 0.2.3-alpha.2），见[兼容性](#兼容性)。插件只注入 CSS、不调用插件 API，版本差异通常只影响
   「命中的类名还在不在」。
 
 ### 装完怎么确认
@@ -180,8 +185,8 @@ const els = document.querySelectorAll('[data-chat-flow] :is([class*="_markdown_"
 
 | 维度 | 说明 |
 |---|---|
-| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）；**0.2.2-rc.1、rc.2、rc.3、rc.4、rc.5 已适配**（2026-11-05 / 11-11 / 11-13 / 11-17 / 11-18，接口核对）；**0.2.3-alpha.1 已适配**（2026-11-22，源码级核对；v1.0.11 的适配判断有误，v1.0.12 修正）。rc.1 的 Go 高亮卡死修复与「折叠后只保留最后一条回答」开关、rc.2 的 markdown fence 包裹层与「向上加载更早消息」、rc.3 新增的「DeepSeek 会话导入」实验插件，都不与本插件冲突。rc.4 是纯修复版：源码只动了 `experimental/liveshare` 的桌面端分享、`llm` 与 `llm-deepseek` 的异常响应处理三个文件。rc.5 只动搜索链路：8 个源码文件全在 `web`、`web-search-deepseek`、`tool-web` 与「网络搜索」设置卡里，作用是让 DeepSeek 模型改用服务端搜索（不按次计费）。**0.2.3-alpha.1 是跨小版本升级**：Cordis 同步到 4.0.0-rc.12、会话状态迁到新包、大量插件 API 有迁移要求。对本插件有两处真实影响：① **CSS-module 类名换了形态**——`ui-primitives` 的样式从 Web 外壳的 CSS 文件搬到 module 元数据、改由 renderer 在挂载时安装，哈希也从 Vite 换成了 lightningcss 的 `[hash]_[local]`，类名由 `_<local>_<hash>` 变成 `<hash>_<local>`（官方升级指南 `client-module-metadata` 明确写了这件事，并建议插件不要匹配生成类名）；v1.0.12 起两种形态都匹配。② **模块系统不再清扫 `style[data-plugin]` 标签**（`removeOwnedStyles` 已移除，框架只安装模块自带元数据声明的样式、且从不扫描 DOM），所以插件自己管好标签：带自己的身份标记、`apply` 时先清旧副本。其余照旧：`MarkdownText` 的 `clsx(css.markdown, …)`、`ChatFlow` 的 `entries.map`、`window.__ModuleLoader__.load({id, factory})`、`ctx.effect` 都在；`content-visibility`/`contain-intrinsic` 全仓仍为 0 处、`useVirtualizer` 位置不变、消息列表仍无虚拟化。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`：DSH 用 `semver.satisfies(…, { includePrerelease: true })` 校验，所以预发布版（含 `0.2.3-alpha.1`）都满足；用默认 semver 语义的第三方工具会认为不满足，这是 DSH 自己的放宽规则。`immediately: true` 让这个包在启动第一批发包里预取——它只有几 KB，但换来样式在首屏渲染前就位，避免长会话先按原高度排版再回流。 |
-| 会静默失效的地方 | 命中依赖前端 CSS-module 类名（消息正文容器的本地名 `markdown`）。DSH 前端一旦改名、改结构、或再换一次构建管线，规则就会**静默失效**：页面一切正常，只是没有优化。0.2.3 就换过一次形态，v1.0.11 因此完全没命中。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
+| DSH 版本 | **0.2.1-rc.2 / rc.3 / rc.5** 实测通过（2026-10-22 / 10-24 / 11-01）；**0.2.2-rc.1、rc.2、rc.3、rc.4、rc.5 已适配**（2026-11-05 / 11-11 / 11-13 / 11-17 / 11-18，接口核对）；**0.2.3-alpha.1 已适配**（2026-11-22，源码级核对；v1.0.11 的适配判断有误，v1.0.12 修正）；**0.2.3-alpha.2 已适配**（2026-11-23，产物级核对，只改了 Node 版本要求）。rc.1 的 Go 高亮卡死修复与「折叠后只保留最后一条回答」开关、rc.2 的 markdown fence 包裹层与「向上加载更早消息」、rc.3 新增的「DeepSeek 会话导入」实验插件，都不与本插件冲突。rc.4 是纯修复版：源码只动了 `experimental/liveshare` 的桌面端分享、`llm` 与 `llm-deepseek` 的异常响应处理三个文件。rc.5 只动搜索链路：8 个源码文件全在 `web`、`web-search-deepseek`、`tool-web` 与「网络搜索」设置卡里，作用是让 DeepSeek 模型改用服务端搜索（不按次计费）。**0.2.3-alpha.1 是跨小版本升级**：Cordis 同步到 4.0.0-rc.12、会话状态迁到新包、大量插件 API 有迁移要求。对本插件有两处真实影响：① **CSS-module 类名换了形态**——`ui-primitives` 的样式从 Web 外壳的 CSS 文件搬到 module 元数据、改由 renderer 在挂载时安装，哈希也从 Vite 换成了 lightningcss 的 `[hash]_[local]`，类名由 `_<local>_<hash>` 变成 `<hash>_<local>`（官方升级指南 `client-module-metadata` 明确写了这件事，并建议插件不要匹配生成类名）；v1.0.12 起两种形态都匹配。② **模块系统不再清扫 `style[data-plugin]` 标签**（`removeOwnedStyles` 已移除，框架只安装模块自带元数据声明的样式、且从不扫描 DOM），所以插件自己管好标签：带自己的身份标记、`apply` 时先清旧副本。其余照旧：`MarkdownText` 的 `clsx(css.markdown, …)`、`ChatFlow` 的 `entries.map`、`window.__ModuleLoader__.load({id, factory})`、`ctx.effect` 都在；`content-visibility`/`contain-intrinsic` 全仓仍为 0 处、`useVirtualizer` 位置不变、消息列表仍无虚拟化。**0.2.3-alpha.2 只改了 Node 版本下限**（`engines.node` 变为 `^24.22.3 \|\| >=26.13.1`，内置 undici 的安全修复版本）：与 alpha.1 相比，10 个契约文件逐字节相同，全仓代码文件只有 11 个变化，落在 `packages/` 里的 3 个还都是注释——没有客户端 DOM/CSS 契约变化，插件不需要改；这条要求只影响用源码或 npm 跑 Host 的人，插件的 Host 半边是空函数、不碰 Node API。`package.json` 里 `engines.dsh` 声明为 `>=0.2.1-rc.2`：DSH 用 `semver.satisfies(…, { includePrerelease: true })` 校验，所以预发布版（含 `0.2.3-alpha.2`）都满足；用默认 semver 语义的第三方工具会认为不满足，这是 DSH 自己的放宽规则。`immediately: true` 让这个包在启动第一批发包里预取——它只有几 KB，但换来样式在首屏渲染前就位，避免长会话先按原高度排版再回流。 |
+| 会静默失效的地方 | 命中依赖前端 CSS-module 类名（消息正文容器的本地名 `markdown`）。DSH 前端一旦改名、改结构、或再换一次构建管线，规则就会**静默失效**：页面一切正常，只是没有优化。0.2.3 就换过一次形态，v1.0.11 因此完全没命中。前端的根节点上没有可长期依赖的稳定属性（`data-markdown-variant` 只在紧凑变体上出现），所以只能匹配类名。用上面「装完怎么确认」那条命令可以分清是「没生效」还是「没效果」 |
 | 浏览器 | 需要 Chromium 85+（`content-visibility`）。Electron 与新版 Chrome/Edge 均满足 |
 | Firefox / Safari | Firefox 125+、Safari 18+ 起支持（Safari 17.6 及更早不支持）。老版本浏览器会忽略这条规则 —— 退化为「没有优化」，不会出错 |
 
